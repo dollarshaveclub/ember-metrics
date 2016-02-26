@@ -19,7 +19,7 @@ module.exports = function(environment) {
     },
 
     'ember-metrics': {
-      includeAdapters: ['segment', 'google-tag-manager', 'piwik']
+      includeAdapters: ['segment', 'google-tag-manager', 'piwik', 'dynamic-tag-manager']
     },
 
     metricsAdapters: [
@@ -36,6 +36,14 @@ module.exports = function(environment) {
         // environments: ['all'],
         config: {
           token: '0f76c037-4d76-4fce-8a0f-a9a8f89d1453'
+        }
+      },
+      {
+        // if `environments` is undefined, it defaults to all
+        name: 'DynamicTagManager',
+        // environments: ['all'],
+        config: {
+          src: '//path.com/to.src.js'
         }
       },
       {
