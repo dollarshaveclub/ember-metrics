@@ -27,6 +27,11 @@ Writing your own adapters for currently unsupported analytics services is easy t
     ```
 1. `Segment`
   - `key`: [Segment key](https://segment.com/docs/libraries/analytics.js/quickstart/)
+
+1. `Piwik`
+  - `piwikUrl`: [Tracker URL](http://developer.piwik.org/guides/tracking-javascript-guide)
+  - `siteId`: [Site Id](http://developer.piwik.org/guides/tracking-javascript-guide)
+
 1. `KISSMetrics` (WIP)
 1. `CrazyEgg` (WIP)
 
@@ -74,6 +79,14 @@ module.exports = function(environment) {
         environments: ['production'],
         config: {
           key: '4fce-8a0f-a9a8f89d1453'
+        }
+      },
+      {
+        name: 'Piwik',
+        environments: ['production'],
+        config: {
+          piwikUrl: 'http://piwik.my.com',
+          siteId: 42
         }
       },
       {
@@ -213,6 +226,17 @@ There are 4 main methods implemented by the service, with the same argument sign
 
   For services that implement it, this method notifies the analytics service that an anonymous user now has a unique identifier.
 
+
+If an adapter implements specific methods you wish to call, then you can use `invoke`
+
+- `invoke(method, [analyticsName], options)`
+
+  ```js
+
+  metrics.invoke('trackLink', 'Piwik', { url: 'my_favorite_link' , linkType: 'download' });
+  ```
+
+
 ### Lazy Initialization
 
 If your app implements dynamic API keys for various analytics integration, you can defer the initialization of the adapters. Instead of configuring `ember-metrics` through `config/environment`, you can call the following from any Object registered in the container:
@@ -240,6 +264,20 @@ export default Ember.Route.extend({
 ```
 
 Because `activateAdapters` is idempotent, you can call it as many times as you'd like. However, it will not reinstantiate existing adapters.
+
+Since ember-metrics now automatically removes all unused adapters, it's also important to force the inclusion of the adapter via `config/environment`.  NOTE: If the adapter is already defined in the `metricsAdapters` array of `config/environment` then this step is not necessary.
+
+```js
+// config/environment
+module.exports = function(environment) {
+  var ENV = {
+    'ember-metrics': {
+      includeAdapters: ['google-analytics']
+    }
+  };
+
+  return ENV;
+```
 
 ## Writing Your Own Adapters
 

@@ -15,9 +15,12 @@ moduleFor('ember-metrics@metrics-adapter:mixpanel', 'mixpanel adapter', {
   }
 });
 
-test('#identify calls `mixpanel.identify` with the right arguments', function(assert) {
-  var adapter = this.subject({ config });
-  const stub = sandbox.stub(window.mixpanel, 'identify', () => {
+test('#identify calls `mixpanel.identify` and `mixpanel.people.set` with the right arguments', function(assert) {
+  const adapter = this.subject({ config });
+  const identify_stub = sandbox.stub(window.mixpanel, 'identify', () => {
+    return true;
+  });
+  const people_set_stub = sandbox.stub(window.mixpanel.people, 'set', () => {
     return true;
   });
   adapter.identify({
@@ -28,12 +31,14 @@ test('#identify calls `mixpanel.identify` with the right arguments', function(as
   adapter.identify({
     distinctId: 123
   });
-  assert.ok(stub.firstCall.calledWith(123, { cookie: 'chocolate chip', foo: 'bar' }), 'it sends the correct arguments and options');
-  assert.ok(stub.secondCall.calledWith(123), 'it sends the correct arguments');
+  assert.ok(identify_stub.firstCall.calledWith(123), 'it sends the correct arguments and options');
+  assert.ok(identify_stub.secondCall.calledWith(123), 'it sends the correct arguments');
+  assert.ok(people_set_stub.firstCall.calledWith({ cookie: 'chocolate chip', foo: 'bar' }), 'it sends the correct arguments and options');
+  assert.equal(people_set_stub.secondCall, null, 'people.set does not fire if there are no additional options');
 });
 
 test('#trackEvent calls `mixpanel.track` with the right arguments', function(assert) {
-  var adapter = this.subject({ config });
+  const adapter = this.subject({ config });
   const stub = sandbox.stub(window.mixpanel, 'track', () => {
     return true;
   });
@@ -49,8 +54,24 @@ test('#trackEvent calls `mixpanel.track` with the right arguments', function(ass
   assert.ok(stub.secondCall.calledWith('Ate a cookie'), 'it sends the correct arguments');
 });
 
+test('#trackPage calls `mixpanel.track` with the right arguments', function(assert) {
+  const adapter = this.subject({ config });
+  const stub = sandbox.stub(window.mixpanel, 'track', () => {
+    return true;
+  });
+  adapter.trackPage({
+    page: '/products/1'
+  });
+  adapter.trackPage({
+    event: 'Page View',
+    page: '/products/1'
+  });
+  assert.ok(stub.firstCall.calledWith('page viewed', { page: '/products/1' }), 'it sends the correct arguments and options');
+  assert.ok(stub.secondCall.calledWith('Page View', { page: '/products/1' }), 'it sends the correct arguments and options');
+});
+
 test('#alias calls `mixpanel.alias` with the right arguments', function(assert) {
-  var adapter = this.subject({ config });
+  const adapter = this.subject({ config });
   const stub = sandbox.stub(window.mixpanel, 'alias', () => {
     return true;
   });

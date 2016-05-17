@@ -7,12 +7,12 @@ const {
   assert,
   get,
   set,
-  merge,
   copy,
   A: emberArray,
   String: { dasherize }
 } = Ember;
 const { keys } = Object;
+const assign = Ember.assign || Ember.merge;
 
 export default Service.extend({
   /**
@@ -109,7 +109,7 @@ export default Service.extend({
   },
 
   /**
-   * Invokes a method across all activated adapters.
+   * Invokes a method on the passed adapter, or across all activated adapters if not passed.
    *
    * @method invoke
    * @param {String} methodName
@@ -123,7 +123,7 @@ export default Service.extend({
     const allAdapterNames = keys(cachedAdapters);
     const [selectedAdapterNames, options] = args.length > 1 ? [[args[0]], args[1]] : [allAdapterNames, args[0]];
     const context = copy(get(this, 'context'));
-    const mergedOptions = merge(context, options);
+    const mergedOptions = assign(context, options);
 
     selectedAdapterNames
       .map((adapterName) => get(cachedAdapters, adapterName))

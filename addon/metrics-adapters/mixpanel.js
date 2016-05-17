@@ -6,13 +6,14 @@ import BaseAdapter from './base';
 const {
   assert,
   $,
-  get
+  get,
 } = Ember;
 const {
   without,
   compact,
   isPresent
 } = objectTransforms;
+const assign = Ember.assign || Ember.merge;
 
 export default BaseAdapter.extend({
   toStringExtension() {
@@ -40,13 +41,14 @@ export default BaseAdapter.extend({
     const props = without(compactedOptions, 'distinctId');
 
     if (isPresent(props)) {
-      window.mixpanel.identify(distinctId, props);
+      window.mixpanel.identify(distinctId);
+      window.mixpanel.people.set(props);
     } else {
       window.mixpanel.identify(distinctId);
     }
   },
 
-  trackEvent(options ={}) {
+  trackEvent(options = {}) {
     const compactedOptions = compact(options);
     const { event } = compactedOptions;
     const props = without(compactedOptions, 'event');
@@ -56,6 +58,13 @@ export default BaseAdapter.extend({
     } else {
       window.mixpanel.track(event);
     }
+  },
+
+  trackPage(options = {}) {
+    const event = { event: 'page viewed' };
+    const mergedOptions = assign(event, options);
+
+    this.trackEvent(mergedOptions);
   },
 
   alias(options = {}) {
